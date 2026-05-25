@@ -17,8 +17,8 @@ private SoporteRepository soporteRepository;
 private RestTemplate restTemplate;
 
 public Soporte crearticket(Soporte soporte){
-String url= "http://localhost:8084/api/v1/Soporte" + soporte.getIdUsuario();
-UsuarioDTO usuarioD = restTemplate.getForObject(url, UsuarioDTO.class);
+String url= "http://localhost:8083/api/usuarios" + soporte.getIdUsuario();
+UsuarioDTO usuario = restTemplate.getForObject(url, UsuarioDTO.class);
 return soporteRepository.save(soporte);
 
 
