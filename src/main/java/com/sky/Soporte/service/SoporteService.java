@@ -7,7 +7,6 @@ import org.springframework.web.client.RestTemplate;
 import com.sky.Soporte.model.Soporte;
 import com.sky.Soporte.model.UsuarioDTO;
 import com.sky.Soporte.repository.SoporteRepository;
-
 @Service
 public class SoporteService {
 @Autowired
@@ -23,7 +22,11 @@ return soporteRepository.save(soporte);
 
 
 }
+public void cerrarticket(Long ticketid){
 
+    String url= "http://localhost:8083/api/usuarios"+"/"+ticketid+"/Cerrar";
+    restTemplate.put(url, null);
+}
 
 
 
