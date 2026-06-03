@@ -12,10 +12,9 @@ import com.sky.Soporte.repository.SoporteRepository;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import java.util.*;
-import com.sky.Soporte.service.SoporteService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
+import com.sky.Soporte.service.*;
 
 
 @RestController
@@ -27,12 +26,37 @@ public class SoporteController {
 
 
 
-    @PostMapping("path")
+    @PostMapping("/path")
     public ResponseEntity<Soporte> postSoporte(@RequestBody Soporte soporte){
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
     
+@GetMapping("/ticket")
+public ResponseEntity<Soporte> getTicket(@RequestParam Long ticketid){
+    Soporte soporte = soporteRepository.findById(ticketid).orElse(null);
+    if(soporte != null){
+        return new ResponseEntity<>(soporte, HttpStatus.OK);
+    }else{
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+}
+
+
+@PostMapping("/ticket")
+public ResponseEntity<Soporte> crearTicket(@RequestBody Soporte soporte){
+    Soporte nuevoSoporte = soporteRepository.save(soporte);
+    return new ResponseEntity<>(nuevoSoporte, HttpStatus.CREATED);
+
+
+}
+
+
+
+
+
+
+
 
 
 
