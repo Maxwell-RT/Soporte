@@ -31,9 +31,7 @@ public class Soporte {
 
     private boolean estado;
 
-    public Object crearticket(Soporte soporte) {
-        return null;
-    }
+
 
 
 

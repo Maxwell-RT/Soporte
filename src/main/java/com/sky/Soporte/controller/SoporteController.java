@@ -22,10 +22,10 @@ public class SoporteController {
     @Autowired
     private SoporteRepository soporteRepository;
 
-    @PostMapping("/path")
-    public ResponseEntity<Soporte> postSoporte(@RequestBody Soporte soporte) {
-
-        return new ResponseEntity<>(HttpStatus.OK);
+    @PostMapping("/crear_ticket")
+    public ResponseEntity<Soporte> crearTicket(@RequestBody Soporte soporte) {
+        Soporte nuevoSoporte = soporteRepository.save(soporte);
+        return new ResponseEntity<>(nuevoSoporte, HttpStatus.CREATED);
     }
 
     @GetMapping("/ticket")
@@ -37,13 +37,17 @@ public class SoporteController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-
-    @PostMapping("/ticket")
-    public ResponseEntity<Soporte> crearTicket(@RequestBody Soporte soporte) {
-        Soporte nuevoSoporte = soporteRepository.save(soporte);
-        return new ResponseEntity<>(nuevoSoporte, HttpStatus.CREATED);
-
+    @PutMapping("/ticket/guardar")
+    public ResponseEntity<Soporte> guardarTicket(@RequestBody Soporte soporte) {
+        Soporte guardado = soporteRepository.save(soporte);
+        try {
+            return new ResponseEntity<>(guardado, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
+
+
 
     @GetMapping("/tickets")
     public ResponseEntity<Iterable<Soporte>> getAllTickets() {
@@ -86,5 +90,10 @@ public class SoporteController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
+
+
+
+
 
 }
