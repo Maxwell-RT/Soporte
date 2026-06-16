@@ -150,6 +150,29 @@ public class SoporteControllerTest {
                 .andExpect(jsonPath("$[0].estado").value(false));
     }   
 
+
+        @Test
+        public void guardartickets() throws Exception {
+        Soporte soporte = new Soporte();
+        soporte.setIdUsuario(1L);
+        soporte.setAsunto("Problema con el servicio");
+        soporte.setDescripcion("No puedo acceder a mi cuenta");
+        soporte.setEstado(false);
+
+        String json = objectMapper.writeValueAsString(soporte);
+
+        mockMvc.perform(put("/api/v1/Soporte/ticket/guardar")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.idUsuario").value(1L))
+                .andExpect(jsonPath("$.asunto").value("Problema con el servicio"))
+                .andExpect(jsonPath("$.descripcion").value("No puedo acceder a mi cuenta"))
+                .andExpect(jsonPath("$.estado").value(false));
+    }
+
+
+
     //Abrir y cerrar tickets (VVVV Pruebas individuales aqui abajo VVVV)
 
     @Test
@@ -198,3 +221,4 @@ public class SoporteControllerTest {
                 .andExpect(status().isNotFound());
     }
 }
+
