@@ -75,8 +75,7 @@ public class SoporteControllerIT {
         public void testCrearTicket_DatosInvalidos() throws Exception {
                 Soporte soporte = new Soporte();
                 soporte.setIdUsuario(1L);
-                soporte.setAsunto(""); // Asunto y descripcion son de caracter obligatorio, sin embargo se dejaran
-                                       // vacíos para simular datos inválidos
+                soporte.setAsunto(""); 
                 soporte.setDescripcion("");
                 soporte.setEstado(false);
 

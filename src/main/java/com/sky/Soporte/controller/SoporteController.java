@@ -1,99 +1,83 @@
 package com.sky.Soporte.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.sky.Soporte.model.Soporte;
-import com.sky.Soporte.repository.SoporteRepository;
-
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import com.sky.Soporte.service.SoporteService;
 
 @RestController
-@RequestMapping("api/v1/Soporte")
+@RequestMapping("api/v1/soporte")
 public class SoporteController {
 
     @Autowired
-    private SoporteRepository soporteRepository;
+    private SoporteService soporteService;
 
-    @PostMapping("/crear_ticket")
+    // POST - Crear nuevo ticket (valida usuario via RestTemplate en el service)
+    @PostMapping
     public ResponseEntity<Soporte> crearTicket(@RequestBody Soporte soporte) {
-        Soporte nuevoSoporte = soporteRepository.save(soporte);
-        return new ResponseEntity<>(nuevoSoporte, HttpStatus.CREATED);
-    }
-
-    @GetMapping("/ticket")
-    public ResponseEntity<Soporte> getTicket(@RequestParam Long ticketid) {
-        Soporte soporte = soporteRepository.findById(ticketid).orElse(null);
-        if (soporte != null) {
-            return new ResponseEntity<>(soporte, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-    @PutMapping("/ticket/guardar")
-    public ResponseEntity<Soporte> guardarTicket(@RequestBody Soporte soporte) {
-        Soporte guardado = soporteRepository.save(soporte);
         try {
-            return new ResponseEntity<>(guardado, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            Soporte nuevoSoporte = soporteService.crearTicket(soporte);
+            return new ResponseEntity<>(nuevoSoporte, HttpStatus.CREATED);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
-
-
-    @GetMapping("/tickets")
-    public ResponseEntity<Iterable<Soporte>> getAllTickets() {
-        Iterable<Soporte> tickets = soporteRepository.findAll();
+    // GET - Obtener todos los tickets
+    @GetMapping
+    public ResponseEntity<List<Soporte>> obtenerTodos() {
+        List<Soporte> tickets = soporteService.obtenerTodos();
         return new ResponseEntity<>(tickets, HttpStatus.OK);
     }
 
-    @PostMapping("/ticket/actualizar")
-    public ResponseEntity<Soporte> actualizarTicket(@RequestParam Long ticketid, @RequestBody Soporte soporte) {
-        Soporte existente = soporteRepository.findById(ticketid).orElse(null);
-        if (existente != null) {
-            existente.setDescripcion(soporte.getDescripcion());
-            existente.setEstado(soporte.isEstado());
-            Soporte actualizado = soporteRepository.save(existente);
+    // GET - Obtener ticket por ID
+    @GetMapping("/{ticketId}")
+    public ResponseEntity<Soporte> obtenerTicket(@PathVariable Long ticketId) {
+        try {
+            Soporte soporte = soporteService.obtenerTicket(ticketId);
+            return new ResponseEntity<>(soporte, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // PUT - Actualizar ticket existente
+    @PutMapping("/{ticketId}")
+    public ResponseEntity<Soporte> actualizarTicket(
+            @PathVariable Long ticketId,
+            @RequestBody Soporte soporte) {
+        try {
+            Soporte actualizado = soporteService.actualizarTicket(ticketId, soporte);
             return new ResponseEntity<>(actualizado, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-
-    }
-
-    @GetMapping("/ticket/eliminar")
-    public ResponseEntity<Void> eliminarTicket(@RequestParam Long ticketid) {
-        if (soporteRepository.existsById(ticketid)) {
-            soporteRepository.deleteById(ticketid);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } else {
+        } catch (RuntimeException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
-    @PutMapping("/ticket/cerrar")
-    public ResponseEntity<Soporte> cerrarTicket(@RequestParam Long ticketid) {
-        Soporte soporte = soporteRepository.findById(ticketid).orElse(null);
-        if (soporte != null) {
-            soporte.setEstado(true);
-            Soporte cerrado = soporteRepository.save(soporte);
+    // PUT - Cerrar ticket (estado = false)
+    @PutMapping("/{ticketId}/cerrar")
+    public ResponseEntity<Soporte> cerrarTicket(@PathVariable Long ticketId) {
+        try {
+            Soporte cerrado = soporteService.cerrarTicket(ticketId);
             return new ResponseEntity<>(cerrado, HttpStatus.OK);
-        } else {
+        } catch (RuntimeException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
-
-
-
-
-
+    // DELETE - Eliminar ticket
+    @DeleteMapping("/{ticketId}")
+    public ResponseEntity<Void> eliminarTicket(@PathVariable Long ticketId) {
+        try {
+            soporteService.eliminarTicket(ticketId);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 }
