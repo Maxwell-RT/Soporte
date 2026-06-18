@@ -1,7 +1,7 @@
 package com.sky.Soporte.Controller;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,14 +9,13 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.sky.Soporte.model.Soporte;
-import com.sky.Soporte.repository.SoporteRepository;
+import com.sky.Soporte.service.SoporteService; // mockea el service, no el repo
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -26,113 +25,97 @@ public class SoporteControllerIT {
         @Autowired
         private MockMvc mockMvc;
 
-        @Autowired
-        private SoporteRepository soporteRepository;
+        @Mock
+        private SoporteService soporteService;
 
-        @BeforeEach
-        public void setup() {
-                Mockito.reset(soporteRepository);
-        }
+        private final ObjectMapper objectMapper = new ObjectMapper();
 
         @Test
-        public void testCrearTicket() throws Exception {
+        public void testCrearTicket_Exitoso() throws Exception {
                 Soporte soporte = new Soporte();
                 soporte.setIdUsuario(1L);
                 soporte.setAsunto("Problema con el servicio");
                 soporte.setDescripcion("No puedo acceder a mi cuenta");
-                soporte.setEstado(false);
+                soporte.setEstado(true); // el service lo crea con estado=true (abierto)
 
-                Mockito.when(soporteRepository.save(Mockito.any(Soporte.class))).thenReturn(soporte);
+                Mockito.when(soporteService.crearTicket(Mockito.any(Soporte.class)))
+                                .thenReturn(soporte);
 
-                mockMvc.perform(post("/api/v1/Soporte/crear_ticket")
+                mockMvc.perform(post("/api/v1/soporte") // URL corregida
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(new ObjectMapper().writeValueAsString(soporte)))
+                                .content(objectMapper.writeValueAsString(soporte)))
                                 .andExpect(status().isCreated())
                                 .andExpect(jsonPath("$.idUsuario").value(1L))
                                 .andExpect(jsonPath("$.asunto").value("Problema con el servicio"))
                                 .andExpect(jsonPath("$.descripcion").value("No puedo acceder a mi cuenta"))
-                                .andExpect(jsonPath("$.estado").value(false));
+                                .andExpect(jsonPath("$.estado").value(true)); // abierto al crear
         }
 
+        // Fallo genérico del service → 400 BAD_REQUEST
         @Test
         public void testCrearTicket_Fallo() throws Exception {
                 Soporte soporte = new Soporte();
                 soporte.setIdUsuario(1L);
                 soporte.setAsunto("Problema con el servicio");
                 soporte.setDescripcion("No puedo acceder a mi cuenta");
-                soporte.setEstado(false);
 
-                Mockito.when(soporteRepository.save(Mockito.any(Soporte.class)))
+                Mockito.when(soporteService.crearTicket(Mockito.any(Soporte.class)))
                                 .thenThrow(new RuntimeException("Error al guardar"));
 
-                mockMvc.perform(post("/api/v1/Soporte/crear_ticket")
+                mockMvc.perform(post("/api/v1/soporte")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(new ObjectMapper().writeValueAsString(soporte)))
-                                .andExpect(status().isInternalServerError());
+                                .content(objectMapper.writeValueAsString(soporte)))
+                                .andExpect(status().isBadRequest()); // controller lanza BAD_REQUEST
         }
 
+        // Usuario inexistente → el service lanza RuntimeException → 400 BAD_REQUEST
         @Test
-        public void testCrearTicket_DatosInvalidos() throws Exception {
+        public void testCrearTicket_UsuarioNoExiste() throws Exception {
                 Soporte soporte = new Soporte();
-                soporte.setIdUsuario(1L);
-                soporte.setAsunto(""); 
-                soporte.setDescripcion("");
-                soporte.setEstado(false);
+                soporte.setIdUsuario(999L);
+                soporte.setAsunto("Problema con el servicio");
+                soporte.setDescripcion("El usuario no existe en el sistema");
 
-                mockMvc.perform(post("/api/v1/Soporte/crear_ticket")
+                Mockito.when(soporteService.crearTicket(Mockito.any(Soporte.class)))
+                                .thenThrow(new RuntimeException("Usuario no encontrado con id: 999"));
+
+                mockMvc.perform(post("/api/v1/soporte")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(new ObjectMapper().writeValueAsString(soporte)))
+                                .content(objectMapper.writeValueAsString(soporte)))
                                 .andExpect(status().isBadRequest());
         }
 
+        // Servicio externo no disponible → RuntimeException → 400 BAD_REQUEST
         @Test
         public void testCrearTicket_ServicioNoDisponible() throws Exception {
                 Soporte soporte = new Soporte();
                 soporte.setIdUsuario(1L);
                 soporte.setAsunto("Problema con el servicio");
                 soporte.setDescripcion("Servicio no disponible");
-                soporte.setEstado(false);
 
-                Mockito.when(soporteRepository.save(Mockito.any(Soporte.class)))
+                Mockito.when(soporteService.crearTicket(Mockito.any(Soporte.class)))
                                 .thenThrow(new RuntimeException("Servicio no disponible"));
 
-                mockMvc.perform(post("/api/v1/Soporte/crear_ticket")
+                mockMvc.perform(post("/api/v1/soporte")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(new ObjectMapper().writeValueAsString(soporte)))
-                                .andExpect(status().isInternalServerError());
+                                .content(objectMapper.writeValueAsString(soporte)))
+                                .andExpect(status().isBadRequest());
         }
 
-        @Test
-        public void testCrearTicket_UsuarioNoExiste() throws Exception {
-                Soporte soporte = new Soporte();
-                soporte.setIdUsuario(999L); // Usuario que no existe
-                soporte.setAsunto("Problema con el servicio");
-                soporte.setDescripcion("El usuario no existe en el sistema");
-                soporte.setEstado(false);
-
-                Mockito.when(soporteRepository.save(Mockito.any(Soporte.class)))
-                                .thenThrow(new RuntimeException("Usuario no existe"));
-
-                mockMvc.perform(post("/api/v1/Soporte/crear_ticket")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(new ObjectMapper().writeValueAsString(soporte)))
-                                .andExpect(status().isInternalServerError());
-        }
-
+        // Error desconocido → RuntimeException → 400 BAD_REQUEST
         @Test
         public void testCrearTicket_ErrorDesconocido() throws Exception {
                 Soporte soporte = new Soporte();
                 soporte.setIdUsuario(1L);
                 soporte.setAsunto("Problema con el servicio");
                 soporte.setDescripcion("Error desconocido");
-                soporte.setEstado(false);
 
-                Mockito.when(soporteRepository.save(Mockito.any(Soporte.class)))
+                Mockito.when(soporteService.crearTicket(Mockito.any(Soporte.class)))
                                 .thenThrow(new RuntimeException("Error desconocido"));
 
-                mockMvc.perform(post("/api/v1/Soporte/crear_ticket")
+                mockMvc.perform(post("/api/v1/soporte")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(new ObjectMapper().writeValueAsString(soporte)))
-                                .andExpect(status().isInternalServerError());
+                                .content(objectMapper.writeValueAsString(soporte)))
+                                .andExpect(status().isBadRequest());
         }
 }

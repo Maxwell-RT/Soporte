@@ -28,7 +28,7 @@ public class SoporteController {
         }
     }
 
-    // GET - Obtener todos los tickets
+    // GET - Obtener todos los tickets en la lista 
     @GetMapping
     public ResponseEntity<List<Soporte>> obtenerTodos() {
         List<Soporte> tickets = soporteService.obtenerTodos();
