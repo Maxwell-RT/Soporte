@@ -51,7 +51,7 @@ public class SoporteControllerIT {
                                 .andExpect(jsonPath("$.estado").value(true)); // abierto al crear
         }
 
-        // Fallo genérico del service → 400 BAD_REQUEST
+        // Fallo del service → 400 BAD_REQUEST (Mismo problema una y otra vez)
         @Test
         public void testCrearTicket_Fallo() throws Exception {
                 Soporte soporte = new Soporte();
