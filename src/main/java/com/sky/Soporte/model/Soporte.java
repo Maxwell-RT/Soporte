@@ -5,12 +5,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Entity
+@Table(name = "soporte")
 @Data
 @NoArgsConstructor
-@Entity
+@AllArgsConstructor
 
 public class Soporte {
 
@@ -18,8 +22,7 @@ public class Soporte {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long idSoporte;
 
-    @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Column(nullable = false)
     private Long idUsuario;
 
     @Column(nullable=false)

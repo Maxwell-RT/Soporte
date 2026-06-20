@@ -22,7 +22,7 @@ public class SoporteService {
 
     private static final String USUARIOS_URL = "http://localhost:8083/api/usuarios";
 
-    // Esto verifica que el usuario existe antes de crear el ticket
+    // Verifica que el usuario existe antes de crear el ticket
     public Soporte crearTicket(Soporte soporte) {
         String url = USUARIOS_URL + "/" + soporte.getIdUsuario();
 
@@ -35,11 +35,11 @@ public class SoporteService {
             throw new RuntimeException("Usuario no encontrado con id: " + soporte.getIdUsuario());
         }
 
-        soporte.setEstado(true); 
+        soporte.setEstado(true); // ticket abierto al crearse
         return soporteRepository.save(soporte);
     }
 
-    // Esto cambia el estado del ticket a cerrado (false) en el repositorio local
+    // Cambia el estado del ticket a cerrado (false) en el repositorio local
     public Soporte cerrarTicket(Long ticketId) {
         Soporte soporte = soporteRepository.findById(ticketId)
                 .orElseThrow(() -> new RuntimeException("Ticket no encontrado con id: " + ticketId));
