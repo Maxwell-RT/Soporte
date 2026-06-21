@@ -1,13 +1,13 @@
 package com.sky.Soporte.Controller;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -15,8 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sky.Soporte.model.Soporte;
-import com.sky.Soporte.service.SoporteService; // mockea el service, no el repo
-
+import com.sky.Soporte.service.SoporteService;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -25,7 +24,7 @@ public class SoporteControllerIT {
         @Autowired
         private MockMvc mockMvc;
 
-        @Mock
+        @MockitoBean
         private SoporteService soporteService;
 
         private final ObjectMapper objectMapper = new ObjectMapper();
@@ -51,7 +50,7 @@ public class SoporteControllerIT {
                                 .andExpect(jsonPath("$.estado").value(true)); // abierto al crear
         }
 
-        // Fallo del service → 400 BAD_REQUEST (Mismo problema una y otra vez)
+        // Fallo del servicio → 400 BAD_REQUEST (Mismo problema una y otra vez)
         @Test
         public void testCrearTicket_Fallo() throws Exception {
                 Soporte soporte = new Soporte();
