@@ -17,18 +17,21 @@ public class SoporteController {
     @Autowired
     private SoporteService soporteService;
 
-    // POST - Crear nuevo ticket (valida usuario via RestTemplate en el service)
     @PostMapping
     public ResponseEntity<Soporte> crearTicket(@RequestBody Soporte soporte) {
         try {
             Soporte nuevoSoporte = soporteService.crearTicket(soporte);
             return new ResponseEntity<>(nuevoSoporte, HttpStatus.CREATED);
         } catch (RuntimeException e) {
+            // Si el mensaje indica usuario no encontrado → 404, resto → 400
+            if (e.getMessage() != null && e.getMessage().startsWith("Usuario no encontrado")) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
-    // GET - Obtener todos los tickets en la lista 
+    // GET - Obtener todos los tickets en la lista
     @GetMapping
     public ResponseEntity<List<Soporte>> obtenerTodos() {
         List<Soporte> tickets = soporteService.obtenerTodos();
