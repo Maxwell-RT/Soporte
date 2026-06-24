@@ -74,4 +74,8 @@ public class SoporteService {
                 .orElseThrow(() -> new RuntimeException("Ticket no encontrado con id: " + ticketId));
         soporteRepository.delete(soporte);
     }
+
+    public List<Soporte> obtenerPorUsuario(Long usuarioId) {
+    return soporteRepository.findByIdUsuario(usuarioId);
+}
 }

@@ -1,7 +1,6 @@
 package com.sky.Soporte.controller;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +28,12 @@ public class SoporteController {
             }
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<List<Soporte>> obtenerPorUsuario(@PathVariable Long usuarioId) {
+        List<Soporte> tickets = soporteService.obtenerPorUsuario(usuarioId);
+        return new ResponseEntity<>(tickets, HttpStatus.OK);
     }
 
     // GET - Obtener todos los tickets en la lista
@@ -83,4 +88,5 @@ public class SoporteController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
 }

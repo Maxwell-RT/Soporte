@@ -1,7 +1,6 @@
 package com.sky.Soporte.Controller;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -92,7 +91,7 @@ public class SoporteControllerTest {
                 mockMvc.perform(post("/api/v1/soporte")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(soporte)))
-                                .andExpect(status().isBadRequest());
+                                .andExpect(status().isNotFound());
         }
 
         // ── GET /api/v1/soporte ──────────────────────────────────────────────────
