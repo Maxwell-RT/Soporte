@@ -43,7 +43,7 @@ public class SoporteControllerIT {
                 respuesta.setIdUsuario(1L);
                 respuesta.setAsunto("Problema con el servicio");
                 respuesta.setDescripcion("No puedo acceder a mi cuenta");
-                respuesta.setEstado(true); // service lo setea, no el cliente
+                respuesta.setEstado(true);
 
                 Mockito.when(soporteService.crearTicket(Mockito.any(Soporte.class)))
                                 .thenReturn(respuesta);
@@ -54,7 +54,7 @@ public class SoporteControllerIT {
                                 .andExpect(status().isCreated())
                                 .andExpect(jsonPath("$.idUsuario").value(1L))
                                 .andExpect(jsonPath("$.asunto").value("Problema con el servicio"))
-                                .andExpect(jsonPath("$.estado").value(true)); // viene del service
+                                .andExpect(jsonPath("$.estado").value(true));
         }
 
         @Test
