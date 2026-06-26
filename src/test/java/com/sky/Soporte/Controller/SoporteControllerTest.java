@@ -58,7 +58,7 @@ public class SoporteControllerTest {
                 Mockito.when(soporteService.crearTicket(Mockito.any(Soporte.class)))
                                 .thenReturn(soporte);
 
-                mockMvc.perform(post("/api/v1/soporte")
+                mockMvc.perform(post("/api/v1/soporte/crear")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(soporte)))
                                 .andExpect(status().isCreated())
@@ -75,7 +75,7 @@ public class SoporteControllerTest {
                 Mockito.when(soporteService.crearTicket(Mockito.any(Soporte.class)))
                                 .thenThrow(new RuntimeException("Error al guardar"));
 
-                mockMvc.perform(post("/api/v1/soporte")
+                mockMvc.perform(post("/api/v1/soporte/crear")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(soporte)))
                                 .andExpect(status().isBadRequest());
@@ -101,7 +101,7 @@ public class SoporteControllerTest {
                 Mockito.when(soporteService.obtenerTodos())
                                 .thenReturn(TICKETS_PRUEBA); // devuelve toda la lista
 
-                mockMvc.perform(get("/api/v1/soporte"))
+                mockMvc.perform(get("/api/v1/soporte/listarT"))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.length()").value(5))
                                 .andExpect(jsonPath("$[0].idUsuario").value(1L))

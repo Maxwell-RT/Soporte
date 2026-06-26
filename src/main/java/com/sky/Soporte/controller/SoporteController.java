@@ -16,7 +16,7 @@ public class SoporteController {
     @Autowired
     private SoporteService soporteService;
 
-    @PostMapping
+    @PostMapping("/crear")
     public ResponseEntity<Soporte> crearTicket(@RequestBody Soporte soporte) {
         try {
             Soporte nuevoSoporte = soporteService.crearTicket(soporte);
@@ -37,7 +37,7 @@ public class SoporteController {
     }
 
     // GET - Obtener todos los tickets en la lista
-    @GetMapping
+    @GetMapping("listarT")
     public ResponseEntity<List<Soporte>> obtenerTodos() {
         List<Soporte> tickets = soporteService.obtenerTodos();
         return new ResponseEntity<>(tickets, HttpStatus.OK);

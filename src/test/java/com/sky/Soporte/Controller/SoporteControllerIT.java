@@ -48,7 +48,7 @@ public class SoporteControllerIT {
                 Mockito.when(soporteService.crearTicket(Mockito.any(Soporte.class)))
                                 .thenReturn(respuesta);
 
-                mockMvc.perform(post("/api/v1/soporte")
+                mockMvc.perform(post("/api/v1/soporte/crear")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isCreated())
@@ -84,7 +84,7 @@ public class SoporteControllerIT {
                 Mockito.when(soporteService.crearTicket(Mockito.any(Soporte.class)))
                                 .thenThrow(new RuntimeException("Error al guardar en base de datos"));
 
-                mockMvc.perform(post("/api/v1/soporte")
+                mockMvc.perform(post("/api/v1/soporte/crear")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isBadRequest());
@@ -105,7 +105,7 @@ public class SoporteControllerIT {
                 Mockito.when(soporteService.obtenerTodos())
                                 .thenReturn(List.of(s1, s2));
 
-                mockMvc.perform(get("/api/v1/soporte"))
+                mockMvc.perform(get("/api/v1/soporte/listarT"))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.length()").value(2))
                                 .andExpect(jsonPath("$[0].asunto").value("Ticket 1"))
@@ -119,7 +119,7 @@ public class SoporteControllerIT {
                 Mockito.when(soporteService.obtenerTodos())
                                 .thenReturn(List.of());
 
-                mockMvc.perform(get("/api/v1/soporte"))
+                mockMvc.perform(get("/api/v1/soporte/listarT"))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.length()").value(0));
         }
