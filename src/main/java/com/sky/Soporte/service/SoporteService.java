@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 
 import com.sky.Soporte.model.Soporte;
 import com.sky.Soporte.model.UsuarioDTO;
@@ -20,22 +21,30 @@ public class SoporteService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private static final String USUARIOS_URL = "http://localhost:8083/api/usuarios";
-
     // Verifica que el usuario existe antes de crear el ticket
     public Soporte crearTicket(Soporte soporte) {
-        String url = USUARIOS_URL + "/" + soporte.getIdUsuario();
+        String url = "http://localhost:8083/api/v1/usuarios/" + soporte.getIdUsuario();
 
         try {
             UsuarioDTO usuario = restTemplate.getForObject(url, UsuarioDTO.class);
             if (usuario == null) {
                 throw new RuntimeException("Usuario no encontrado con id: " + soporte.getIdUsuario());
             }
-        } catch (HttpClientErrorException e) {
+
+        } catch (HttpClientErrorException.NotFound e) {
+            // 404 específico — el usuario no existe
             throw new RuntimeException("Usuario no encontrado con id: " + soporte.getIdUsuario());
+
+        } catch (HttpClientErrorException e) {
+            // Otro error HTTP 4xx
+            throw new RuntimeException("Error al validar usuario: " + e.getStatusCode());
+
+        } catch (ResourceAccessException e) {
+
+            throw new RuntimeException("Servicio de usuarios no disponible");
         }
 
-        soporte.setEstado(true); // ticket abierto al crearse
+        soporte.setEstado(true);
         return soporteRepository.save(soporte);
     }
 
@@ -44,7 +53,7 @@ public class SoporteService {
         Soporte soporte = soporteRepository.findById(ticketId)
                 .orElseThrow(() -> new RuntimeException("Ticket no encontrado con id: " + ticketId));
 
-        soporte.setEstado(false); // false = cerrado
+        soporte.setEstado(false);
         return soporteRepository.save(soporte);
     }
 
@@ -76,6 +85,6 @@ public class SoporteService {
     }
 
     public List<Soporte> obtenerPorUsuario(Long usuarioId) {
-    return soporteRepository.findByIdUsuario(usuarioId);
-}
+        return soporteRepository.findByIdUsuario(usuarioId);
+    }
 }
