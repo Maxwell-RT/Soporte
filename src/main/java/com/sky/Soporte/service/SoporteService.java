@@ -23,31 +23,31 @@ public class SoporteService {
 
     // Verifica que el usuario existe antes de crear el ticket
     public Soporte crearTicket(Soporte soporte) {
-        String url = "http://localhost:8083/api/v1/usuarios/" + soporte.getIdUsuario();
+    String url = "http://localhost:8083/api/v1/usuarios/" + soporte.getIdUsuario();
 
-        try {
-            UsuarioDTO usuario = restTemplate.getForObject(url, UsuarioDTO.class);
-            if (usuario == null) {
-                throw new RuntimeException("Usuario no encontrado con id: " + soporte.getIdUsuario());
-            }
+    try {
+        UsuarioDTO usuario = restTemplate.getForObject(url, UsuarioDTO.class);
 
-        } catch (HttpClientErrorException.NotFound e) {
-            // 404 específico — el usuario no existe
+        if (usuario == null) {
             throw new RuntimeException("Usuario no encontrado con id: " + soporte.getIdUsuario());
-
-        } catch (HttpClientErrorException e) {
-            // Otro error HTTP 4xx
-            throw new RuntimeException("Error al validar usuario: " + e.getStatusCode());
-
-        } catch (ResourceAccessException e) {
-
-            throw new RuntimeException("Servicio de usuarios no disponible");
         }
 
-        soporte.setEstado(true);
-        return soporteRepository.save(soporte);
+        
+        soporte.setNombreUsuario(usuario.getNombre() + " " + usuario.getApellido());
+
+    } catch (HttpClientErrorException.NotFound e) {
+        throw new RuntimeException("Usuario no encontrado con id: " + soporte.getIdUsuario());
+
+    } catch (HttpClientErrorException e) {
+        throw new RuntimeException("Error al validar usuario: " + e.getStatusCode());
+
+    } catch (ResourceAccessException e) {
+        throw new RuntimeException("Servicio de usuarios no disponible");
     }
 
+    soporte.setEstado(true);
+    return soporteRepository.save(soporte);
+}
     // Cambia el estado del ticket a cerrado (false) en el repositorio local
     public Soporte cerrarTicket(Long ticketId) {
         Soporte soporte = soporteRepository.findById(ticketId)

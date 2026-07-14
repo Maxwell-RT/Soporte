@@ -33,7 +33,8 @@ public class Soporte {
 
     private boolean estado;
 
-
+    @Column
+    private String nombreUsuario;
 
 
 

@@ -14,7 +14,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import com.sky.Soporte.model.Soporte;
@@ -83,19 +85,44 @@ public class SoporteServiceTest {
         verify(soporteRepository, never()).save(any());
     }
 
-    @Test
-    void crearTicket_usuarioNoExiste_httpClientErrorException() {
-        // El servicio externo devuelve 4xx
-        when(restTemplate.getForObject(anyString(), eq(UsuarioDTO.class)))
-                .thenThrow(HttpClientErrorException.class);
+@Test
+void crearTicket_usuarioNoExiste_http404() {
+    // ✅ Caso específico: 404 del microservicio de usuarios
+    when(restTemplate.getForObject(anyString(), eq(UsuarioDTO.class)))
+            .thenThrow(HttpClientErrorException.NotFound.class);
 
-        RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> soporteService.crearTicket(soporte));
+    RuntimeException ex = assertThrows(RuntimeException.class,
+            () -> soporteService.crearTicket(soporte));
 
-        assertTrue(ex.getMessage().contains("Usuario no encontrado con id: 1"));
-        verify(soporteRepository, never()).save(any());
-    }
+    assertTrue(ex.getMessage().contains("Usuario no encontrado con id: 1"));
+    verify(soporteRepository, never()).save(any());
+}
 
+@Test
+void crearTicket_usuarioNoExiste_httpClientErrorException() {
+    // ✅ Caso genérico: otro error 4xx (401, 403, etc.)
+    when(restTemplate.getForObject(anyString(), eq(UsuarioDTO.class)))
+            .thenThrow(new HttpClientErrorException(HttpStatus.FORBIDDEN));
+
+    RuntimeException ex = assertThrows(RuntimeException.class,
+            () -> soporteService.crearTicket(soporte));
+
+    assertTrue(ex.getMessage().contains("Error al validar usuario: 403"));
+    verify(soporteRepository, never()).save(any());
+}
+
+@Test
+void crearTicket_servicioNoDisponible_resourceAccessException() {
+    // ✅ Caso nuevo: microservicio caído o sin conexión
+    when(restTemplate.getForObject(anyString(), eq(UsuarioDTO.class)))
+            .thenThrow(new ResourceAccessException("Connection refused"));
+
+    RuntimeException ex = assertThrows(RuntimeException.class,
+            () -> soporteService.crearTicket(soporte));
+
+    assertTrue(ex.getMessage().contains("Servicio de usuarios no disponible"));
+    verify(soporteRepository, never()).save(any());
+}
     @Test
     void crearTicket_servicioNoDisponible() {
         // Cualquier excepción de red que no sea HttpClientErrorException
